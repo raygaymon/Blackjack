@@ -232,7 +232,6 @@ def game():
         print(f"Dealer's turn now.")
         dealer.display_hand()
         dealer_ace = check_ace(dealer.hand)
-        ace_deducted = False
         
         # make sure dealer's hand value is > 17 - casino rules..?
         while dealer.value < 17 and len(dealer.hand) < 5:
@@ -246,9 +245,9 @@ def game():
             dealer.hand_value()
 
             # only minus 10 once - using ace_deducted to check for deduction
-            if dealer.value > 21 and dealer_ace and not ace_deducted:
+            if dealer.value > 21 and dealer_ace:
                 dealer.value -= 10
-                ace_deducted = True
+                dealer_ace = False
             
             dealer.display_hand()
             print(f"Dealer's hand value is now: {dealer.value}")
