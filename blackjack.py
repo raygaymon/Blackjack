@@ -39,6 +39,7 @@ class Player():
         self.value = 0
         self.bet = 0
         self.budget = 10000
+        self.have_ace = False
 
     # to return players' hand values
     def hand_value(self):
@@ -81,7 +82,10 @@ def deal_cards(players, deck):
 
     for i in range(2):
         for p in players:
-            p.take_card(deck.deal())
+            c = deck.deal()
+            if c.rank == "Ace":
+                p.have_ace = True
+            p.take_card(c)
     
     for p in players:
         p.hand_value()
@@ -105,13 +109,6 @@ def get_players():
     
     return players
 
-def check_ace(hand):
-
-    for h in hand:
-        if h.rank == "Ace":
-            return True
-    return False
-
 def hit (player, deck):
 
     action = ""
@@ -128,11 +125,12 @@ def hit (player, deck):
         player.display_hand()
 
         # check if the player has gone over and if they have an ace - if they have an ace then they can change it into a 1
-        if player.value > 21 and not check_ace(player.hand):
+        if player.value > 21 and not player.have_ace:
             print(f"You went over 21 at {player.value}. Let's hope the dealer goes over too.")
             break
-        elif check_ace(player.hand) and player.value > 21:
+        elif player.have_ace and player.value > 21:
             player.value -= 10
+            player.have_ace = False
         
         action = input(f"{player.name}, do you want to take another card? Current value of hand: {player.value} (y/n) : ").upper()
 
@@ -140,6 +138,8 @@ def hit (player, deck):
             print("Please only enter y or n.")
         elif action == 'Y':
             c = deck.deal()
+            if c.rank == "Ace":
+                player.have_ace = True
             player.take_card(c)
             player.hand_value()
             print(f"You got the {c}.")
@@ -231,23 +231,22 @@ def game():
         
         print(f"Dealer's turn now.")
         dealer.display_hand()
-        dealer_ace = check_ace(dealer.hand)
         
         # make sure dealer's hand value is > 17 - casino rules..?
         while dealer.value < 17 and len(dealer.hand) < 5:
             c = deck.deal()
 
             # check if dealer got ace from draw after not getting ace
-            if c.rank == "Ace" and not dealer_ace:
-                dealer_ace = True
+            if c.rank == "Ace":
+                dealer.have_ace = True
 
             dealer.take_card(c)
             dealer.hand_value()
 
             # only minus 10 once - using ace_deducted to check for deduction
-            if dealer.value > 21 and dealer_ace:
+            if dealer.value > 21 and dealer.have_ace:
                 dealer.value -= 10
-                dealer_ace = False
+                dealer.have_ace = False
             
             dealer.display_hand()
             print(f"Dealer's hand value is now: {dealer.value}")
